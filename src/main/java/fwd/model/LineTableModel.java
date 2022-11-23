@@ -1,70 +1,62 @@
-package fwd.view;
+package fwd.model;
 
-import fwd.model.InvoiceHeader;
 import javax.swing.table.AbstractTableModel;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
-/**
- *
- * @author m7md_
- */
 
-public class HeaderTableModel extends AbstractTableModel {
+public class LineTableModel extends AbstractTableModel {
 
-    private List<InvoiceHeader> headerArray;
+    private List<InvoiceLines> itemArray;
     private DateFormat dataFormat = new SimpleDateFormat("dd-MM-yyyy");
 
-    public HeaderTableModel(List<InvoiceHeader> headerArray) {
-        this.headerArray = headerArray;
+    public LineTableModel(List<InvoiceLines> invoiceLines) {
+        this.itemArray = invoiceLines;
     }
 
-    // Handle rows
+    public List<InvoiceLines> getInvoiceLines() {
+        return itemArray;
+    }
+
+
     @Override
     public int getRowCount() {
-        return headerArray.size();
+        return itemArray.size();
     }
 
-    public List<InvoiceHeader> getHeaderArray() {
-        return headerArray;
-    }
-
-    // Handle Columns
     @Override
     public int getColumnCount() {
         return 4;
     }
 
     @Override
-    public String getColumnName(int index) {
-
-        switch (index) {
+    public String getColumnName(int columnIndex) {
+        switch (columnIndex) {
             case 0:
-                return "invoice Num";
+                return "Name";
             case 1:
-                return "Customer Name";
+                return "Price";
             case 2:
-                return "Invoice Date";
+                return "Count";
             case 3:
-                return "Invoice Total";
+                return "Total";
             default:
                 return "";
         }
     }
 
-
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        InvoiceHeader row = headerArray.get(rowIndex);
+        InvoiceLines row = itemArray.get(rowIndex);
         switch (columnIndex) {
             case 0:
-                return row.getInvoiceNum();
+                return row.getItemName();
             case 1:
-                return row.getCustomerName();
+                return row.getItemPrice();
             case 2:
-                return dataFormat.format(row.getInvoiceDate());
+                return row.getCount();
             case 3:
-                return row.invoiceTotal();
+                return row.itemSubTotal();
             default:
                 return null;
         }
@@ -74,12 +66,12 @@ public class HeaderTableModel extends AbstractTableModel {
     public Class<?> getColumnClass(int index) {
         switch (index) {
             case 0:
-                return Integer.class;
-            case 1:
-            case 2:
                 return String.class;
+            case 1:
             case 3:
                 return Double.class;
+            case 2:
+                return Integer.class;
             default:
                 return Object.class;
         }
@@ -89,6 +81,4 @@ public class HeaderTableModel extends AbstractTableModel {
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         return false;
     }
-
-
 }

@@ -54,4 +54,5 @@ public class InvoiceLines {
    public double itemSubTotal(){
         return itemPrice * count;
     }
+
 }

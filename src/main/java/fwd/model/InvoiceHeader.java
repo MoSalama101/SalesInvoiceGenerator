@@ -1,5 +1,7 @@
 package fwd.model;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -49,7 +51,11 @@ public class InvoiceHeader {
 
     @Override
     public String toString() {
-        return "InvoiceHeader{" + "invoiceNum=" + invoiceNum + ", invoiceDate=" + invoiceDate + ", customerName=" + customerName + ", items=" + items + '}';
+        String headerInfo = "InvoiceHeader{" + "invoiceNum=" + invoiceNum + ", invoiceDate=" + invoiceDate + ", customerName=" + customerName + ", items=" + items + '}';
+        for(InvoiceLines lineItems: getLineItems()){
+            headerInfo += "\n\t" + lineItems;
+        }
+        return headerInfo;
     }
 
     public double invoiceTotal(){

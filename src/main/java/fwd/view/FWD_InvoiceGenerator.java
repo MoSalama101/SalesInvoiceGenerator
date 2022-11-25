@@ -30,6 +30,8 @@ public class FWD_InvoiceGenerator extends javax.swing.JFrame {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         headerTbl = new javax.swing.JTable();
+        headerTbl.getSelectionModel().addListSelectionListener(controller);
+
         jScrollPane2 = new javax.swing.JScrollPane();
         itemTbl = new javax.swing.JTable();
         label1 = new javax.swing.JLabel();
@@ -276,6 +278,8 @@ public class FWD_InvoiceGenerator extends javax.swing.JFrame {
     private HeaderTableModel invHeaderTableModel;
     private LineTableModel invLineTableModel;
     private CreateNewInvoiceDialog invoiceDialog;
+    private CreateItemDialog lineDialog;
+
 
     public Controller getController() {
         return controller;
@@ -326,6 +330,12 @@ public class FWD_InvoiceGenerator extends javax.swing.JFrame {
 
     public CreateNewInvoiceDialog getHeaderDialog() {
         return invoiceDialog;
+    }
+    public void setLineDialog(CreateItemDialog lineDialog) {
+        this.lineDialog = lineDialog;
+    }
+    public CreateItemDialog getLineDialog() {
+        return lineDialog;
     }
 
 }

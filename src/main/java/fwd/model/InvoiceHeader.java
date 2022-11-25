@@ -65,5 +65,15 @@ public class InvoiceHeader {
         }
         return sum;
     }
-    
+
+    public String getDataAsCSV() {
+        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        return "" + getInvoiceNum() + "," + dateFormat.format(getInvoiceDate()) + "," + getCustomerName();
+
+    }
+
+    public void addInvLine(InvoiceLines itemLine) {
+        getLineItems().add(itemLine);
+
+    }
 }

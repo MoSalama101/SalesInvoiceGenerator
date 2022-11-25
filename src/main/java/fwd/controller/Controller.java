@@ -3,6 +3,7 @@ package fwd.controller;
 import fwd.model.InvoiceHeader;
 import fwd.model.InvoiceLines;
 import fwd.model.LineTableModel;
+import fwd.view.CreateItemDialog;
 import fwd.view.FWD_InvoiceGenerator;
 import fwd.model.HeaderTableModel;
 import fwd.view.CreateNewInvoiceDialog;
@@ -46,6 +47,18 @@ public class Controller implements ActionListener, ListSelectionListener {
                 break;
             case "submitInvoice":
                 submitInvoice();
+                break;
+            case "Add New Item":
+                createItem();
+                break;
+            case "Delete Item":
+                deleteItem();
+                break;
+            case "cancel Item":
+                cancelItem();
+                break;
+            case "submit Item":
+                submitItem();
                 break;
             case "load file":
                 loadFile();
@@ -116,6 +129,7 @@ public class Controller implements ActionListener, ListSelectionListener {
         }
         return (int) (max + 1);
     }
+
     private InvoiceHeader getInvByNum(int invNum) {
         InvoiceHeader hd = null;
         for (InvoiceHeader inv : mainframe.getInvHeaderArray()) {
@@ -142,7 +156,7 @@ public class Controller implements ActionListener, ListSelectionListener {
                     String num = hdInv[0];
                     String date = hdInv[1];
                     String custName = hdInv[2];
-                    // ---------- parsing step ------------- 
+                    // ---------- parsing step -------------
                     int invoiceNum = Integer.parseInt(num);
                     Date invoiceDate = new SimpleDateFormat("dd-MM-yyyy").parse(date);
 
@@ -161,7 +175,7 @@ public class Controller implements ActionListener, ListSelectionListener {
                         String itemName = lnParts[1];
                         String itemPrice = lnParts[2];
                         String itemCount = lnParts[3];
-                        // ---------- parsing step ------------- 
+                        // ---------- parsing step -------------
                         int number = Integer.parseInt(invNo);
                         double price = Double.parseDouble(itemPrice);
                         int count = Integer.parseInt(itemCount);
@@ -185,25 +199,42 @@ public class Controller implements ActionListener, ListSelectionListener {
         displayInvoices();
     }
 
-    public void saveChanges() {
-        JFileChooser fc = new JFileChooser();
-        int result = fc.showSaveDialog(taArea);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            String path = fc.getSelectedFile().getPath();
-            FileOutputStream output = null;
+
+    private void saveChanges() {
+        String headers = "";
+        String lines = "";
+        for (InvoiceHeader hd : mainframe.getInvHeaderArray()) {
+            headers += hd.getDataAsCSV();
+            headers += "\n";
+            for (InvoiceLines line : hd.getLineItems()) {
+                lines += line.getDataAsCSV();
+                lines += "\n";
+            }
+        }
+        JOptionPane.showMessageDialog(mainframe, "select file to save header data!", "Attention", JOptionPane.INFORMATION_MESSAGE);
+        JFileChooser fileChooser = new JFileChooser();
+        int output = fileChooser.showSaveDialog(mainframe);
+        if (output == JFileChooser.APPROVE_OPTION) {
+            File headerFile = fileChooser.getSelectedFile();
             try {
-                output = new FileOutputStream(path);
-                byte[] b = taArea.getText().getBytes();
-                output.write(b);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    output.close();
-                } catch (IOException e) {
+                FileWriter fileWriter = new FileWriter(headerFile);
+                fileWriter.write(headers);
+                fileWriter.flush();
+                fileWriter.close();
+
+                JOptionPane.showMessageDialog(mainframe, "Please, select file to save lines data!", "Attention", JOptionPane.INFORMATION_MESSAGE);
+                output = fileChooser.showSaveDialog(mainframe);
+                if (output == JFileChooser.APPROVE_OPTION) {
+                    File linesFile = fileChooser.getSelectedFile();
+                    FileWriter itemsFileWriter = new FileWriter(linesFile);
+                    itemsFileWriter.write(lines);
+                    itemsFileWriter.flush();
+                    itemsFileWriter.close();
                 }
+                JOptionPane.showMessageDialog(null, "File Saved Successfully ! ");
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(mainframe, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -230,10 +261,54 @@ public class Controller implements ActionListener, ListSelectionListener {
 
         }
     }
+
     private void displayInvoices() {
         for (InvoiceHeader header : mainframe.getInvHeaderArray()) {
             System.out.println(header);
         }
     }
+
+    //--------------------------------------------- Items --------------------------------------------------
+    private void createItem() {
+        mainframe.setLineDialog(new CreateItemDialog(mainframe));
+        mainframe.getLineDialog().setVisible(true);
+    }
+
+    private void deleteItem() {
+        int lineIndex = mainframe.getItemsTbl().getSelectedRow();
+        InvoiceLines line = mainframe.getInvLineTableModel().getInvoiceLines().get(lineIndex);
+        mainframe.getInvLineTableModel().getInvoiceLines().remove(lineIndex);
+        mainframe.getInvHeaderTableModel().fireTableDataChanged();
+        mainframe.getInvLineTableModel().fireTableDataChanged();
+        mainframe.getTotalLbl().setText("" + line.getInv().invoiceTotal());
+        JOptionPane.showMessageDialog(null, "Line Deleted Successfully ! ");
+        displayInvoices();
+
+    }
+
+    private void submitItem() {
+        String itemName = mainframe.getLineDialog().getItemNameTxtField().getText();
+        String itemCountStr = mainframe.getLineDialog().getItemCountTxtField().getText();
+        String itemPriceStr = mainframe.getLineDialog().getItemPriceTxtField().getText();
+        mainframe.getLineDialog().setVisible(false);
+        mainframe.getLineDialog().dispose();
+        mainframe.setLineDialog(null);
+        int itemCount = Integer.parseInt(itemCountStr);
+        double itemPrice = Double.parseDouble(itemPriceStr);
+        int headerIndex = mainframe.getHeaderTbl().getSelectedRow();
+        InvoiceHeader headerLine = mainframe.getInvHeaderTableModel().getHeaderArray().get(headerIndex);
+        InvoiceLines invoiceLine = new InvoiceLines(headerLine, itemName, itemPrice, itemCount);
+        headerLine.addInvLine(invoiceLine);
+        mainframe.getInvLineTableModel().fireTableDataChanged();
+        mainframe.getInvHeaderTableModel().fireTableDataChanged();
+        mainframe.getTotalLbl().setText("" + invoiceLine.itemSubTotal());
+        displayInvoices();
+    }
+    private void cancelItem() {
+        mainframe.getLineDialog().setVisible(false);
+        mainframe.getLineDialog().dispose();
+        mainframe.setLineDialog(null);
+    }
+
 
 }

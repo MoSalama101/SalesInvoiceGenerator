@@ -55,4 +55,8 @@ public class InvoiceLines {
         return itemPrice * count;
     }
 
+    public String getDataAsCSV() {
+        return "" + getInv().getInvoiceNum() + "," + getItemName() + "," + getItemPrice() + "," + getCount();
+    }
+
 }
